@@ -2,7 +2,13 @@
 const PatientController = require("../controllers/PatientController");
 const StatusController = require("../controllers/StatusController");
 const UserController = require("../controllers/UserController");
+
+// import middleware
 const auth = require("../middleware/auth");
+// const validateLogin = require("../middleware/validateLogin");
+const validatePost = require("../middleware/validatePost");
+const validatePut = require("../middleware/validatePut");
+const validateRegister = require("../middleware/validateRegister");
 
 // import express
 const express = require("express");
@@ -18,22 +24,21 @@ router.get("/", (req, res) => {
 });
 
 // Membuat routing patient
-router.get("/patients", auth, PatientController.index);
-router.post("/patients", auth, PatientController.store);
-router.put("/patients/:id", auth,PatientController.update);
-router.delete("/patients/:id", auth, PatientController.destroy);
-router.get("/patients/:id", auth,PatientController.show);
-router.get("/patients/search/:name", auth, PatientController.search);
-router.get("/patients/status/positive", auth, PatientController.positive);
-router.get("/patients/status/recovered", auth, PatientController.recovered);
-router.get("/patients/status/dead", auth,PatientController.dead);
+router.get("/patients", PatientController.index);
+router.post("/patients", validatePost, PatientController.store);
+router.put("/patients/:id", validatePut, PatientController.update);
+router.delete("/patients/:id", PatientController.destroy);
+router.get("/patients/:id",PatientController.show);
+router.get("/patients/search/:name", PatientController.search);
+router.get("/patients/status/positive", PatientController.positive);
+router.get("/patients/status/recovered", PatientController.recovered);
+router.get("/patients/status/dead",PatientController.dead);
 
 // Membuat routing status
-router.get("/status", auth, StatusController.index);
-router.post("/status", auth, StatusController.store);
+router.get("/status", StatusController.index);
 
 // Membuat routing user
-router.post("/register", UserController.register);
+router.post("/register", validateRegister, UserController.register);
 router.post("/login", UserController.login);
 
 

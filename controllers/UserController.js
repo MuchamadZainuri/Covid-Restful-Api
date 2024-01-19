@@ -5,7 +5,7 @@ const bcrypt = require("bcrypt");
 // import jsonwebtoken
 const jwt = require("jsonwebtoken");
 // import basic-auth
-const basicAuth = require("basic-auth");
+const auth = require("basic-auth");
 
 
 // import dotenv
@@ -15,6 +15,7 @@ const { SECRET_KEY } = process.env;
 
 // buat class UserController
 class UserController {
+
     async register(req, res) {
         try {
             const { name, email, password } = req.body;
@@ -43,48 +44,53 @@ class UserController {
                 data: user,
             };
             return res.status(201).json(data);
-        } catch (err){
+        } catch (err) {
             const data = {
                 message: "Error",
                 error: err.message,
             };
             return res.status(500).json(data);
         }
+
     };
 
+
     async login(req, res) {
+
         try {
-            const user = await basicAuth(req);
+            const user = auth(req);
             const email = user.name;
             const password = user.pass;
-            const cekEmail = await User.findOne({ where: { email } });
-            if (!cekEmail) {
-                const data = {
-                    message: "Email tidak terdaftar",
-                };
-                return res.status(401).json(data);
-            }
-            const cekPassword = await bcrypt.compare(password, cekEmail.password);
-            if (!cekPassword) {
+            const cekEmail = await User.findOne({ where: { email: email } });
+            if (cekEmail) {
+                const cekPassword = await bcrypt.compare(password, cekEmail.password);
+                if (cekPassword) {
+                    const token = jwt.sign({ id: cekEmail.id }, SECRET_KEY);
+                    const data = {
+                        message: "Berhasil login",
+                        token: token,
+                    };
+                    return res.status(200).json(data);
+                }
                 const data = {
                     message: "Password salah",
                 };
                 return res.status(401).json(data);
             }
-            const token = jwt.sign({ id: cekEmail.id }, SECRET_KEY);
             const data = {
-                message: "Login berhasil",
-                token: token,
+                message: "Email tidak terdaftar",
             };
-            return res.status(200).json(data);
-        } catch (err) { 
+            return res.status(401).json(data);
+        } catch (err) {
             const data = {
                 message: "Error",
                 error: err.message,
             };
             return res.status(500).json(data);
         }
-    }
+
+    };
+
 }
 
 // membuat object UserController
