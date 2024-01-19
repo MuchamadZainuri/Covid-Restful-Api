@@ -1,5 +1,5 @@
-// import mysql
-const mysql = require("mysql");
+// import Sequelize
+const { Sequelize } = require('sequelize');
 
 // import dotenv dan menjalankan method config
 require("dotenv").config();
@@ -11,25 +11,26 @@ const { DB_HOST, DB_USERNAME, DB_PASSWORD, DB_DATABASE } = process.env;
  * Membuat koneksi database menggunakan method createConnection
  * Method menerima parameter object: host, user, password, database
  */
-const db = mysql.createConnection({
+const db = new Sequelize(DB_DATABASE, DB_USERNAME, DB_PASSWORD, {
   host: DB_HOST,
-  user: DB_USERNAME,
-  password: DB_PASSWORD,
-  database: DB_DATABASE,
+  dialect: "mysql",
+  logging: false,
 });
 
 /**
  * Menghubungkan ke database menggunakan method connect
  * Menerima parameter callback
  */
-db.connect((err) => {
-  if (err) {
-    console.log("Error connecting " + err.stack);
-    return;
-  } else {
+async function connect() {
+  try {
+    await db.authenticate();
     console.log("Connected to database");
-    return;
+  } catch (error) {
+    console.error("Error connecting", error);
   }
-});
+}
+connect();
+
+
 
 module.exports = db;
